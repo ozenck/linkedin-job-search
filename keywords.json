@@ -1,0 +1,32 @@
+{
+    "for_me" : {
+        "python": false,
+        "django": false,
+        "docker": false,
+        "kubernetes": false,
+        "jira": false,
+        "agile": false,
+        "ci/cd": false,
+        "rabbitmq": false,
+        "mongodb": false,
+        "fastapi": false,
+        "vue.js": false,
+        "react": false,
+        "typescript": false,
+        "unit test": false,
+        "automation": false,
+        "api": false,
+        "rest": false
+    },
+    "not_for_me": {
+        "java": false,
+        "android": false,
+        "swift": false,
+        "spring": false,
+        "kotlin": false,
+        "ruby": false,
+        "graphql": false,
+        "pandas": false,
+        "ios": false
+    }
+}
