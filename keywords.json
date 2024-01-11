@@ -2,6 +2,7 @@
     "for_me" : {
         "python": false,
         "django": false,
+        "fastapi": false,
         "docker": false,
         "kubernetes": false,
         "jira": false,
@@ -9,8 +10,8 @@
         "ci/cd": false,
         "rabbitmq": false,
         "mongodb": false,
-        "fastapi": false,
         "vue.js": false,
+        "vuejs": false,
         "react": false,
         "typescript": false,
         "unit test": false,
@@ -19,7 +20,8 @@
         "rest": false
     },
     "not_for_me": {
-        "java": false,
+        "c#": false,
+        ".net": false,
         "android": false,
         "swift": false,
         "spring": false,
