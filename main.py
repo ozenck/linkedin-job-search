@@ -48,7 +48,7 @@ def is_job_worth_to_save(item):
     notforme_list = item.get("not_for_me_items").split(",")
     if any(word in forme_list for word in ["python", "django", "fastapi"]):
         return True
-    elif any(word in notforme_list for word in ["spring", ".net", "c#"]):
+    elif any(word in notforme_list for word in ["java ", "spring", ".net", "c#"]):
         return False
     return True if len(forme_list)>1 else False
 

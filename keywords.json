@@ -20,6 +20,7 @@
         "rest": false
     },
     "not_for_me": {
+        "java ":false,
         "c#": false,
         ".net": false,
         "android": false,
