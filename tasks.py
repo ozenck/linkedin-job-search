@@ -22,6 +22,10 @@ app.conf.beat_schedule = {
         'task': 'tasks.run_job_search',
         'schedule': crontab(minute='*/15', hour='8-23', day_of_week='fri')
     },
+    # 'every-three-hours-on-weekdays': {
+    #     'task': 'tasks.your_task_name',
+    #     'schedule': crontab(hour='8-23/3', day_of_week='mon-fri'), # (Monday to Friday) between 8 AM and 11 PM  every three hours, 8-11-14-17-20-23
+    # },
 }
 
 # run_job_search.delay()
