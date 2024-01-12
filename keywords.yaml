@@ -1,0 +1,32 @@
+for_me:
+  - agile
+  - api
+  - automation
+  - ci/cd
+  - django
+  - docker
+  - fastapi
+  - jira
+  - kubernetes
+  - mongodb
+  - python
+  - rabbitmq
+  - react
+  - rest
+  - typescript
+  - unit test
+  - vue.js
+  - vuejs
+not_for_me:
+  - .net
+  - android
+  - c#
+  - graphql
+  - ios
+  - java
+  - kotlin
+  - pandas
+  - php
+  - ruby
+  - spring
+  - swift

@@ -17,16 +17,23 @@ from selenium.webdriver.support import expected_conditions as EC
 
 import json
 from dotenv import load_dotenv
+import yaml
+
 
 load_dotenv()
 
 filterwarnings("ignore")
 time_str = datetime.today().strftime('%d_%m_%Y_%H_%M_%S')
 
-def read_keywords(file_name):
-    with open(file_name, 'r') as f:
-        data = json.load(f)
-    return data
+def read_keywords_yaml(file_name):
+    with open(file_name, 'r') as file:
+        data = yaml.safe_load(file)
+
+    for_me_list = data['for_me']
+    not_for_me_list = data['not_for_me']
+    
+    keywords_json = {"for_me": {item: False for item in for_me_list}, "not_for_me": {item: False for item in not_for_me_list}}
+    return keywords_json
 
 def get_chrome_capabilities():
     caps = webdriver.DesiredCapabilities.CHROME
@@ -48,7 +55,7 @@ def is_job_worth_to_save(item):
     notforme_list = item.get("not_for_me_items").split(",")
     if any(word in forme_list for word in ["python", "django", "fastapi"]):
         return True
-    elif any(word in notforme_list for word in ["java ", "spring", ".net", "c#"]):
+    elif any(word in notforme_list for word in ["java ", "spring", ".net", "c#", "php"]):
         return False
     return True if len(forme_list)>1 else False
 
@@ -70,7 +77,7 @@ driver = webdriver.Chrome(ChromeDriverManager().install())
 driver.set_window_size(850, 960)
 driver.set_window_position(0, 0)
 
-KEYWORDS_INITIAL=read_keywords('keywords.json')
+KEYWORDS_INITIAL = read_keywords_yaml('keywords.yaml')
 KEYWORDS = KEYWORDS_INITIAL
 get_url = os.environ.get("JOB_SEARCH_URL")
 # "https://www.linkedin.com/jobs/search/?currentJobId=3732882614&f_JT=F&f_WT=2&geoId=102105699&keywords=Python&location=T%C3%BCrkiye&origin=JOB_SEARCH_PAGE_SEARCH_BUTTON&sortBy=DD&start=0"
