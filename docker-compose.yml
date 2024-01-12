@@ -11,10 +11,21 @@ services:
     command: celery -A tasks.app worker --loglevel=info
     depends_on:
       - redis
+      - selenium-chrome
 
   celery_beat:
     build: .
-    command: celery -A tasks.app beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    command: celery -A tasks.app beat --loglevel=info
     depends_on:
       - redis
-      - celery_worker
+      - selenium-chrome
+
+  selenium-chrome:
+    image: selenium/standalone-chrome:latest
+    ports:
+      - "4444:4444"
+    volumes:
+      - /dev/shm:/dev/shm  # Recommended to avoid shared memory issues
+    environment:
+      - SE_NODE_MAX_SESSIONS=2
+      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
