@@ -1,5 +1,6 @@
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException
@@ -7,6 +8,7 @@ from warnings import filterwarnings
 from datetime import datetime
 import time
 import os
+import argparse
 
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.actions.wheel_input import ScrollOrigin
@@ -20,13 +22,14 @@ import yaml
 
 
 class LinkedInJobScraper:
-    def __init__(self):
+    def __init__(self,worker):
         load_dotenv()
         filterwarnings("ignore")
         self.time_str = datetime.today().strftime('%d_%m_%Y_%H_%M_%S')
         self.KEYWORDS_INITIAL = self.read_keywords_yaml('keywords.yaml')
         self.KEYWORDS = self.KEYWORDS_INITIAL
         self.ITEM_LIST = []
+        self.worker_option = worker
 
     def read_keywords_yaml(self, file_name):
         with open(file_name, 'r') as file:
@@ -71,13 +74,29 @@ class LinkedInJobScraper:
             time.sleep(1)
 
     def run(self):
-        chrome_options = Options()
-        chrome_options.add_experimental_option("detach", True)
-        chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
 
-        driver = webdriver.Chrome(ChromeDriverManager().install())
-        driver.set_window_size(850, 960)
-        driver.set_window_position(0, 0)
+        driver = None
+
+        if self.worker_option == 'docker':
+            print("Driver is connecting to http://selenium-chrome:4444")
+            options = webdriver.ChromeOptions()
+            options.add_argument('--ignore-ssl-errors=yes')
+            options.add_argument('--ignore-certificate-errors')
+            driver = webdriver.Remote(command_executor='http://selenium-chrome:4444',
+                                      desired_capabilities=DesiredCapabilities.CHROME, options=options)
+            print("Driver connected.")
+            #########################################
+        else:
+            print("Local driver is running.")
+            chrome_options = Options()
+            chrome_options.add_experimental_option("detach", True)
+            chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
+            driver = webdriver.Chrome(ChromeDriverManager().install())
+
+            print('Driver connected')
+        ##########################################
+
+        driver.maximize_window()
 
         get_url = os.environ.get("JOB_SEARCH_URL")
         driver.get(get_url)
@@ -182,10 +201,18 @@ class LinkedInJobScraper:
             OLD_PAGE_NUM = PAGE_START_NUM
             PAGE_START_NUM += 25
 
+def main():
+    parser = argparse.ArgumentParser(description='Description of your program')
+    parser.add_argument('-w', '--worker', help='Description for worker argument', required=False, default='docker')
+    # parser.add_argument('-b', '--bar', help='Description for bar argument', required=True)
+    args = vars(parser.parse_args())
+    print('Worker parameter is specified')
+    linkedin_job_scraper = LinkedInJobScraper(worker=args.get('worker'))
+    linkedin_job_scraper.run()
 
-# Instantiate the class and run the script
-linkedin_job_scraper = LinkedInJobScraper()
-linkedin_job_scraper.run()
+if __name__ == "__main__":
+    main()
+
 
     print("Job Search Finished")
 
