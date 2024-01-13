@@ -22,7 +22,7 @@ import yaml
 
 
 class LinkedInJobScraper:
-    def __init__(self,worker):
+    def __init__(self, worker):
         load_dotenv()
         filterwarnings("ignore")
         self.time_str = datetime.today().strftime('%d_%m_%Y_%H_%M_%S')
@@ -31,6 +31,7 @@ class LinkedInJobScraper:
         self.ITEM_LIST = []
         self.worker_option = worker
         self.driver = None
+
     def read_keywords_yaml(self, file_name):
         with open(file_name, 'r') as file:
             data = yaml.safe_load(file)
@@ -64,7 +65,7 @@ class LinkedInJobScraper:
             return True
         elif any(word in notforme_list for word in ["java ", "spring", ".net", "c#", "php"]):
             return False
-        return True if len(forme_list) > 1 else False
+        return True if len(forme_list)>1 else False
 
     def scroll_down(self, driver):
         header = driver.find_element(By.CLASS_NAME, "scaffold-layout__list-container")
@@ -72,6 +73,7 @@ class LinkedInJobScraper:
         for i in range(5):
             ActionChains(driver).scroll_from_origin(scroll_origin, 0, 1000).perform()  # Scroll down
             time.sleep(1)
+
     def login(self):
         get_url = os.environ.get("JOB_SEARCH_URL")
         self.driver.get(get_url)
@@ -100,8 +102,6 @@ class LinkedInJobScraper:
         time.sleep(30)
         return True
 
-
-
     def prepare_driver_option(self):
         if self.worker_option == 'docker':
             print("Driver is connecting to http://selenium-chrome:4444")
@@ -111,7 +111,6 @@ class LinkedInJobScraper:
             self.driver = webdriver.Remote(command_executor='http://selenium-chrome:4444',
                                            desired_capabilities=DesiredCapabilities.CHROME, options=options)
             print("Driver connected.")
-            #########################################
         else:
             print("Local driver is running.")
             chrome_options = Options()
@@ -121,7 +120,6 @@ class LinkedInJobScraper:
 
             print('Driver connected')
 
-
         self.driver.maximize_window()
 
         return f'Driver has been set as {self.worker_option}'
@@ -130,6 +128,7 @@ class LinkedInJobScraper:
         if self.worker_option == 'local':
             with open(f'results_{self.time_str}.json', 'w', encoding='utf-8') as f:
                 json.dump(self.ITEM_LIST, f, ensure_ascii=False, indent=4)
+
     def get_jobs(self):
         PAGE_START_NUM = 0
         OLD_PAGE_NUM = 0
@@ -214,12 +213,12 @@ class LinkedInJobScraper:
                         print(f"----- The job {name} passed")
             OLD_PAGE_NUM = PAGE_START_NUM
             PAGE_START_NUM += 25
-    def run(self):
 
-        ##########################################
+    def run(self):
         self.prepare_driver_option()
         self.login()
         self.get_jobs()
+
 
 def main():
     parser = argparse.ArgumentParser(description='Arg parser for linkedin job search')
@@ -227,6 +226,7 @@ def main():
     args = vars(parser.parse_args())
     linkedin_job_scraper = LinkedInJobScraper(worker=args.get('worker'))
     linkedin_job_scraper.run()
+
 
 if __name__ == "__main__":
     main()
