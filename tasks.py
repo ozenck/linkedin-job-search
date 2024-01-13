@@ -1,6 +1,6 @@
 from celery import Celery
 from celery.schedules import crontab
-from main import run
+from main import main
 
 app = Celery('tasks', broker='redis://redis:6379/0', backend='redis://redis:6379/0')
 
@@ -10,7 +10,7 @@ def add(x, y):
 
 @app.task
 def run_job_search():
-    return run()
+    return main()
 
 app.conf.beat_schedule = {
     'execute-every-1-minute-on-friday': {
@@ -31,5 +31,3 @@ app.conf.beat_schedule = {
     #     'schedule': crontab(hour='8-23/3', day_of_week='mon-fri'), # (Monday to Friday) between 8 AM and 11 PM  every three hours, 8-11-14-17-20-23
     # },
 }
-
-run_job_search.delay()

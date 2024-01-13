@@ -222,18 +222,12 @@ class LinkedInJobScraper:
         self.get_jobs()
 
 def main():
-    parser = argparse.ArgumentParser(description='Description of your program')
-    parser.add_argument('-w', '--worker', help='Description for worker argument', required=False, default='docker',choices=['docker','local'])
-    # parser.add_argument('-b', '--bar', help='Description for bar argument', required=True)
+    parser = argparse.ArgumentParser(description='Arg parser for linkedin job search')
+    parser.add_argument('-w', '--worker', help='Worker argument', required=False, default='docker',choices=['docker','local'])
     args = vars(parser.parse_args())
     linkedin_job_scraper = LinkedInJobScraper(worker=args.get('worker'))
     linkedin_job_scraper.run()
 
 if __name__ == "__main__":
     main()
-
-
     print("Job Search Finished")
-
-if __name__ == "__main__":
-    run()
