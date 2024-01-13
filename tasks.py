@@ -15,17 +15,21 @@ def run_job_search():
 app.conf.beat_schedule = {
     'execute-every-1-minute-on-friday': {
         'task': 'tasks.add',
-        'schedule': crontab(minute='*/1', hour='8-23', day_of_week='fri'),
+        'schedule': crontab(minute='*/60', hour='8-23', day_of_week='fri'),
         'args': (1, 3),
     },
-    'execute-every-15-minute-on-friday': {
+    'execute-everyday-per-3-hours': {
         'task': 'tasks.run_job_search',
-        'schedule': crontab(minute='*/15', hour='8-23', day_of_week='fri')
+        'schedule': crontab(hour='8-23/3') # everyday per 3 hours between 8am-23pm.  8 AM, 11 AM, 2 PM, 5 PM, 8 PM, and 11 PM
     },
+    # 'execute-every-15-minute-on-friday': {
+    #     'task': 'tasks.run_job_search',
+    #     'schedule': crontab(minute='*/15', hour='8-23', day_of_week='fri')
+    # },
     # 'every-three-hours-on-weekdays': {
     #     'task': 'tasks.your_task_name',
     #     'schedule': crontab(hour='8-23/3', day_of_week='mon-fri'), # (Monday to Friday) between 8 AM and 11 PM  every three hours, 8-11-14-17-20-23
     # },
 }
 
-# run_job_search.delay()
+run_job_search.delay()
