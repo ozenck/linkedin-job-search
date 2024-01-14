@@ -231,8 +231,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-    print("Job Search Finished")
-
-if __name__ == "__main__":
-    run()
