@@ -75,12 +75,8 @@ class LinkedInJobScraper:
             time.sleep(1)
 
     def login(self):
-        get_url = os.environ.get("JOB_SEARCH_URL")
-        self.driver.get(get_url)
-
-        element = self.driver.find_element(By.XPATH, "//a[@data-tracking-control-name='public_jobs_nav-header-signin']")
-        self.driver.execute_script("arguments[0].click();", element)
-
+        login_url = "https://www.linkedin.com/login"
+        self.driver.get(login_url)
         time.sleep(10)
 
         username = self.driver.find_element(By.ID, "username")
@@ -99,10 +95,13 @@ class LinkedInJobScraper:
             return False
 
         time.sleep(30)
+        get_url = os.environ.get("JOB_SEARCH_URL")
+        self.driver.get(get_url)
+        time.sleep(30)
         return True
 
     def prepare_driver_option(self):
-        if self.worker_option == 'docker':
+        if self.worker_option == "docker":
             print("Driver is connecting to http://selenium-chrome:4444")
             options = webdriver.ChromeOptions()
             options.add_argument('--ignore-ssl-errors=yes')
@@ -129,8 +128,7 @@ class LinkedInJobScraper:
     def get_jobs(self):
         PAGE_START_NUM, OLD_PAGE_NUM = 0, 0
         PAGE_BREAK = int(os.environ.get("PAGE_BREAK", 5))
-
-        for search_index in range(PAGE_BREAK):
+        for _ in range(PAGE_BREAK):
             if PAGE_START_NUM != 0:  # if not first time
                 get_url = get_url.replace(f"&start={OLD_PAGE_NUM}", f"&start={PAGE_START_NUM}")
                 self.driver.get(get_url)
@@ -189,7 +187,7 @@ class LinkedInJobScraper:
                         print(f"Already applied. job_name:{name} company:{company}")
                         continue
                     worth_to_save = self.is_job_worth_to_save(item)
-                    if worth_to_save and save_button and save_button.text.lower() in ("kaydet", "save"):
+                    if worth_to_save and save_button and any(word in save_button.text.lower() for word in ["kaydet", "save"]):
                         time.sleep(5)
                         self.driver.execute_script("arguments[0].click();", save_button)
                         time.sleep(10)
@@ -198,7 +196,7 @@ class LinkedInJobScraper:
 
                         self.save_jobs_in_json()
                         time.sleep(10)
-                    elif worth_to_save and save_button.text.lower() in ("kaydedildi", "saved"):
+                    elif worth_to_save and any(word in save_button.text.lower() for word in ["kaydedildi", "saved"]):
                         print(f">>>>> the job already saved. job_name:{name} company:{company}")
                         self.ITEM_LIST.append(item)
 
@@ -208,15 +206,16 @@ class LinkedInJobScraper:
                         print(f"----- The job {name} passed")
             OLD_PAGE_NUM = PAGE_START_NUM
             PAGE_START_NUM += 25
+        return self.ITEM_LIST
 
     def run(self):
         self.prepare_driver_option()
         self.login()
-        self.get_jobs()
+        return self.get_jobs()
 
 def main(worker_option):
-    linkedin_job_scraper = LinkedInJobScraper(worker_option==worker_option)
-    linkedin_job_scraper.run()
+    linkedin_job_scraper = LinkedInJobScraper(worker_option=worker_option)
+    return linkedin_job_scraper.run()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Arg parser for linkedin job search')

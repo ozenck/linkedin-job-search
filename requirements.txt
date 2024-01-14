@@ -3,3 +3,4 @@ python-dotenv==1.0.0
 webdriver-manager==4.0.1
 PyYAML==6.0.1
 celery[redis]==5.3.6
+secure-smtplib==0.1.1
