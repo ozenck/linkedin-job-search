@@ -22,14 +22,14 @@ import yaml
 
 
 class LinkedInJobScraper:
-    def __init__(self, worker):
+    def __init__(self, worker_option):
         load_dotenv()
         filterwarnings("ignore")
         self.time_str = datetime.today().strftime('%d_%m_%Y_%H_%M_%S')
         self.KEYWORDS_INITIAL = self.read_keywords_yaml('keywords.yaml')
         self.KEYWORDS = self.KEYWORDS_INITIAL
         self.ITEM_LIST = []
-        self.worker_option = worker
+        self.worker_option = worker_option
         self.driver = None
 
     def read_keywords_yaml(self, file_name):
@@ -94,7 +94,6 @@ class LinkedInJobScraper:
         self.driver.execute_script("arguments[0].click();", element)
 
         check_error = self.driver.find_elements(By.CLASS_NAME, "form__label--error")
-        breakpoint()
         if check_error:
             print('Your login informations are wrong. Check your login parameters in .env file and try again please')
             return False
@@ -110,7 +109,6 @@ class LinkedInJobScraper:
             options.add_argument('--ignore-certificate-errors')
             self.driver = webdriver.Remote(command_executor='http://selenium-chrome:4444',
                                            desired_capabilities=DesiredCapabilities.CHROME, options=options)
-            print("Driver connected.")
         else:
             print("Local driver is running.")
             chrome_options = Options()
@@ -118,8 +116,7 @@ class LinkedInJobScraper:
             chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
             self.driver = webdriver.Chrome(ChromeDriverManager().install())
 
-            print('Driver connected')
-
+        print(f'Driver connected. Browser options has been set as {self.worker_option}')
         self.driver.maximize_window()
 
         return f'Driver has been set as {self.worker_option}'
@@ -130,8 +127,7 @@ class LinkedInJobScraper:
                 json.dump(self.ITEM_LIST, f, ensure_ascii=False, indent=4)
 
     def get_jobs(self):
-        PAGE_START_NUM = 0
-        OLD_PAGE_NUM = 0
+        PAGE_START_NUM, OLD_PAGE_NUM = 0, 0
         PAGE_BREAK = int(os.environ.get("PAGE_BREAK", 5))
 
         for search_index in range(PAGE_BREAK):
@@ -186,15 +182,14 @@ class LinkedInJobScraper:
                         "company_url": company_url,
                         "job_url": k.get_attribute('href'),
                     }
-                    formatted_json = json.dumps(item, indent=4)
-                    print(formatted_json)
+                    print(json.dumps(item, indent=4))
                     try:
                         save_button = self.driver.find_elements(By.CLASS_NAME, "jobs-save-button")[0]
                     except IndexError:
                         print(f"Already applied. job_name:{name} company:{company}")
                         continue
                     worth_to_save = self.is_job_worth_to_save(item)
-                    if worth_to_save and save_button and ("kaydet", "save") in save_button.text.lower():
+                    if worth_to_save and save_button and save_button.text.lower() in ("kaydet", "save"):
                         time.sleep(5)
                         self.driver.execute_script("arguments[0].click();", save_button)
                         time.sleep(10)
@@ -203,7 +198,7 @@ class LinkedInJobScraper:
 
                         self.save_jobs_in_json()
                         time.sleep(10)
-                    elif worth_to_save and ("kaydedildi", "saved") in save_button.text.lower():
+                    elif worth_to_save and save_button.text.lower() in ("kaydedildi", "saved"):
                         print(f">>>>> the job already saved. job_name:{name} company:{company}")
                         self.ITEM_LIST.append(item)
 
@@ -219,15 +214,13 @@ class LinkedInJobScraper:
         self.login()
         self.get_jobs()
 
-
-def main():
-    parser = argparse.ArgumentParser(description='Arg parser for linkedin job search')
-    parser.add_argument('-w', '--worker', help='Worker argument', required=False, default='docker',choices=['docker','local'])
-    args = vars(parser.parse_args())
-    linkedin_job_scraper = LinkedInJobScraper(worker=args.get('worker'))
+def main(worker_option):
+    linkedin_job_scraper = LinkedInJobScraper(worker_option==worker_option)
     linkedin_job_scraper.run()
 
-
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description='Arg parser for linkedin job search')
+    parser.add_argument('-w', '--worker_option', help='Worker argument', required=True, default='docker', choices=['docker', 'local'])
+    args = parser.parse_args()
+    main(args.worker_option)
     print("Job Search Finished")
