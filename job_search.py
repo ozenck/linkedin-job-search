@@ -56,7 +56,7 @@ class LinkedInJobScraper:
         for key in keyword_copy.keys():
             if key in search_text.lower():
                 keyword_copy[key] = True
-        return ", ".join(key for key, value in keyword_copy.items() if value)
+        return ",".join(key for key, value in keyword_copy.items() if value)
 
     def is_job_worth_to_save(self, item):
         forme_list = item.get("for_me_items").split(",")
@@ -95,9 +95,6 @@ class LinkedInJobScraper:
             return False
 
         time.sleep(30)
-        get_url = os.environ.get("JOB_SEARCH_URL")
-        self.driver.get(get_url)
-        time.sleep(30)
         return True
 
     def prepare_driver_option(self):
@@ -127,6 +124,11 @@ class LinkedInJobScraper:
 
     def get_jobs(self):
         PAGE_START_NUM, OLD_PAGE_NUM = 0, 0
+        
+        get_url = os.environ.get("JOB_SEARCH_URL")
+        self.driver.get(get_url)
+        time.sleep(30)
+        
         PAGE_BREAK = int(os.environ.get("PAGE_BREAK", 5))
         for _ in range(PAGE_BREAK):
             if PAGE_START_NUM != 0:  # if not first time
