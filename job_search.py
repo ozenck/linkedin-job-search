@@ -140,7 +140,7 @@ class LinkedInJobScraper:
             job_list = self.driver.find_elements(By.CLASS_NAME, "job-card-container__link,job-card-list__title")
 
             self.driver.execute_script("return document.body.scrollHeight")
-            company, company_url = "", ""
+            company, company_url, job_url = "", "", ""
             for k in job_list:
                 name = k.text
                 if len(name)>0:
@@ -155,6 +155,12 @@ class LinkedInJobScraper:
                         company = company_obj.text
                     except NoSuchElementException:
                         continue
+
+                    try:
+                        job_url = k.get_attribute('href')
+                    except NoSuchElementException:
+                        continue
+                    
                     job_details = self.driver.find_element(By.ID, "job-details").text
                     time.sleep(5)
                     job_type, about = "", ""
@@ -180,7 +186,7 @@ class LinkedInJobScraper:
                         "for_me_items": for_me,
                         "not_for_me_items": not_for_me,
                         "company_url": company_url,
-                        "job_url": k.get_attribute('href'),
+                        "job_url": job_url,
                     }
                     print(json.dumps(item, indent=4))
                     try:
