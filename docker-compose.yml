@@ -1,32 +1,53 @@
-version: '3'
-
 services:
   redis:
-    image: "redis:alpine"
-    ports:
-      - "6379:6379"
+    image: redis:alpine
+    ports: ["6379:6379"]
 
-  celery_worker:
-    build: .
-    command: celery -A tasks.app worker --loglevel=info
-    depends_on:
-      - redis
-      - selenium-chrome
+  selenium-chrome:
+    image: selenium/standalone-chrome:latest
+    ports: ["4444:4444"]
+    init: true
+    shm_size: "2gb"
+    volumes: ["/dev/shm:/dev/shm"]
+    environment:
+      - SE_NODE_MAX_SESSIONS=1
+      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+      - SE_VNC_NO_PASSWORD=true
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:4444/status | grep -q '\"ready\": *true'"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
+    stop_grace_period: 15s
 
   celery_beat:
     build: .
     command: celery -A tasks.app beat --loglevel=info
     depends_on:
-      - redis
-      - selenium-chrome
+      redis:
+        condition: service_started
+      selenium-chrome:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f 'celery .* beat' >/dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 5s
+    init: true
+    stop_grace_period: 15s
 
-  selenium-chrome:
-    image: selenium/standalone-chrome:latest
-    ports:
-      - "4444:4444"
-    volumes:
-      - /dev/shm:/dev/shm  # Recommended to avoid shared memory issues
-    environment:
-      - SE_NODE_MAX_SESSIONS=1
-      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
-      - SE_VNC_NO_PASSWORD=true
+  celery_worker:
+    build: .
+    command: sh -c "sleep 10 && celery -A tasks.app worker --loglevel=info"
+    depends_on:
+      redis:
+        condition: service_started
+      selenium-chrome:
+        condition: service_healthy
+      celery_beat:
+        condition: service_healthy
+    init: true
+    restart: on-failure
+    stop_grace_period: 15s

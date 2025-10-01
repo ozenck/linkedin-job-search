@@ -28,7 +28,7 @@ not_for_me=The JD sometimes has unwanted keywords, if you are not interested you
 Refactor the is_job_worth_to_save function as you wish, the function automatically saves the jobs for you.
 
 ## Run on Docker
-<p>docker-compose up -d <br/>
+<p>docker-compose up -d --build <br/>
 
 Driver configs are different on local and docker. Remote connection performed on docker.
 Selenium grid default port is 4444, you can check on vnc live screen while docker running. <br/>
