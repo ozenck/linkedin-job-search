@@ -6,10 +6,12 @@ for_me:
   - django
   - docker
   - fastapi
+  - flask
   - jira
   - kubernetes
   - mongodb
   - python
+  - kafka
   - rabbitmq
   - react
   - rest
@@ -23,7 +25,7 @@ not_for_me:
   - c#
   - graphql
   - ios
-  - java
+  - java 
   - kotlin
   - pandas
   - php

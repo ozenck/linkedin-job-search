@@ -3,6 +3,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.common.exceptions import NoSuchElementException
 from warnings import filterwarnings
 from datetime import datetime
@@ -63,12 +64,13 @@ class LinkedInJobScraper:
         notforme_list = item.get("not_for_me_items").split(",")
         if any(word in forme_list for word in ["python", "django", "fastapi"]):
             return True
-        elif any(word in notforme_list for word in ["java ", "spring", ".net", "c#", "php"]):
-            return False
-        return True if len(forme_list)>1 else False
+        # elif any(word in notforme_list for word in ["java ", "spring", ".net", "c#", "php"]):
+        #     return False
+        # return True if len(forme_list)>1 else False
+        return False
 
     def scroll_down(self, driver):
-        header = driver.find_element(By.CLASS_NAME, "scaffold-layout__list-container")
+        header = driver.find_element(By.CLASS_NAME, "scaffold-layout__list ")
         scroll_origin = ScrollOrigin.from_element(header, 50, 100)  # Offset: right/down
         for i in range(5):
             ActionChains(driver).scroll_from_origin(scroll_origin, 0, 1000).perform()  # Scroll down
@@ -110,7 +112,13 @@ class LinkedInJobScraper:
             chrome_options = Options()
             chrome_options.add_experimental_option("detach", True)
             chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
-            self.driver = webdriver.Chrome(ChromeDriverManager().install())
+            chrome_install = ChromeDriverManager().install()
+
+            folder = os.path.dirname(chrome_install)
+            chromedriver_path = os.path.join(folder, "chromedriver.exe")
+
+            service = ChromeService(chromedriver_path)
+            self.driver = webdriver.Chrome(service=service, options=chrome_options)
 
         print(f'Driver connected. Browser options has been set as {self.worker_option}')
         self.driver.maximize_window()
@@ -137,27 +145,24 @@ class LinkedInJobScraper:
                 time.sleep(30)
 
             self.scroll_down(self.driver)
-            job_list = self.driver.find_elements(By.CLASS_NAME, "job-card-container__link,job-card-list__title")
+            job_list = self.driver.find_elements(By.CLASS_NAME, "artdeco-entity-lockup__title")
 
             self.driver.execute_script("return document.body.scrollHeight")
-            company, company_url, job_url = "", "", ""
+            company, company_url = "", ""
             for k in job_list:
-                name = k.text
+                try:
+                    name = k.text
+                except Exception:
+                    continue
                 if len(name)>0:
                     self.driver.execute_script("arguments[0].click();", k)
                     time.sleep(10)
                     try:
-                        company_info = self.driver.find_element(By.CLASS_NAME,
-                                                                "job-details-jobs-unified-top-card__primary-description-container")
+                        company_info = self.driver.find_element(By.CLASS_NAME, "job-details-jobs-unified-top-card__company-name")
                         time.sleep(5)
-                        company_obj = company_info.find_element(By.CLASS_NAME, "app-aware-link")
-                        company_url = company_obj.get_attribute("href")
-                        company = company_obj.text
-                    except NoSuchElementException:
-                        continue
-
-                    try:
-                        job_url = k.get_attribute('href')
+                        company = company_info.text.strip()
+                        link_element = company_info.find_element(By.TAG_NAME, "a")
+                        company_url = link_element.get_attribute("href")
                     except NoSuchElementException:
                         continue
                     
@@ -186,7 +191,6 @@ class LinkedInJobScraper:
                         "for_me_items": for_me,
                         "not_for_me_items": not_for_me,
                         "company_url": company_url,
-                        "job_url": job_url,
                     }
                     print(json.dumps(item, indent=4))
                     try:

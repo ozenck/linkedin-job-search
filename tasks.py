@@ -22,7 +22,7 @@ def add(x, y):
 
 @app.task
 def run_job_search():
-    send_email_task_complete("Task started.", "The task started. This email has been sent by automatically.")
+    # send_email_task_complete("Task started.", "The task started. This email has been sent by automatically.")
     result = main("docker")
     json_str = json.dumps(result, ensure_ascii=False, indent=4)
     send_email_task_complete("Task completed.", 
@@ -73,14 +73,18 @@ app.conf.beat_schedule = {
         'schedule': crontab(minute='*/10'),
         'args': (1, 3),
     },
-    # 'execute-every-3-hours': {
-    #     'task': 'tasks.run_job_search',
-    #     'schedule': crontab(minute='*/10'),
-    # },
-    'execute-everyday-per-3-hours': {
+    'execute-every-2-hours': {
         'task': 'tasks.run_job_search',
-        'schedule': crontab(hour='8-23/3') # everyday per 3 hours between 8am-23pm.  8 AM, 11 AM, 2 PM, 5 PM, 8 PM, and 11 PM
+        'schedule': crontab(hour='*/5'),
     },
+    # 'execute-every-60-minutes': {
+    #     'task': 'tasks.run_job_search',
+    #     'schedule': crontab(minute='*/60'),
+    # },
+    # 'execute-everyday-per-3-hours': {
+    #     'task': 'tasks.run_job_search',
+    #     'schedule': crontab(hour='8-23/3') # everyday per 3 hours between 8am-23pm.  8 AM, 11 AM, 2 PM, 5 PM, 8 PM, and 11 PM
+    # },
     # 'run-every-15-minutes': {
     #     'task': 'tasks.run_job_search',
     #     'schedule': crontab(minute='*/15'), # every 15 minutes
@@ -97,5 +101,5 @@ app.conf.beat_schedule = {
 }
 
 
-# add.delay(1,3)
-# run_job_search.delay()
+add.delay(1,3)
+run_job_search.delay()
